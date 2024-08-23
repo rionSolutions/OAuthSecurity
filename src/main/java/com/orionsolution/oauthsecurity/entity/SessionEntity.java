@@ -10,24 +10,20 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "TB_USER_SESSION", schema = "OAUTH")
+@Table(name = "TB_SESSION", schema = "OAUTH")
 public class SessionEntity implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
-  @Column(name = "ID")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "tb_user_session_seq")
+  @SequenceGenerator(name = "tb_user_session_seq", allocationSize = 1, schema = "oauth")
   private Long id;
 
-  @Column(name = "ENCR_CREDENTIALS")
-  private String encryptedCredentials;
-
-  @ManyToOne
-  @Column(name = "USER_ROLE", precision = 2)
-  @JoinColumn(name = "ROLE_CODE")
-  private RolesEntity userRoleCode;
+  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  @JoinColumn(name = "credentials")
+  private UserRoleEntity credentials;
 
   @Column(name = "DT_INCLUDE_REGT")
   private LocalDateTime dtInclusion;

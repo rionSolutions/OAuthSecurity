@@ -3,7 +3,7 @@ package com.orionsolution.oauthsecurity.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -11,16 +11,14 @@ import java.time.LocalDateTime;
 public class RolesEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE ,generator = "tb_roles_seq")
+  @SequenceGenerator(name = "tb_roles_seq", allocationSize = 1, schema = "oauth")
   private Long id;
 
-  @Column(name = "NAME_ROLE")
-  private String nameRole;
+  @Column(name = "ROLE_NAME")
+  private String roleName;
 
-  @Column(name = "PERMISSIONS")
-  private String permission;
-
-  @Column(name = "ROLE_CODE", precision = 2)
-  private char roleCode;
+  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  private PermissionsEntity permissionId;
 
 }

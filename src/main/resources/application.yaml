@@ -1,0 +1,13 @@
+spring:
+  main:
+    banner-mode: console
+  application:
+    name: '@project.name@'
+    version: '@project.version@'
+    description: '@project.description@'
+server:
+  port: 8080
+  servlet:
+    context-path: /oauth
+    encoding:
+      charset: '@project.build.sourceEncoding@'

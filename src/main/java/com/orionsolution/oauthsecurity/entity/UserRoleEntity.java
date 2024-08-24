@@ -15,6 +15,7 @@ public class UserRoleEntity {
   private String credentials;
 
   @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  @JoinColumn(name = "roleCode")
   private RolesEntity roleCode;
 
   @Column(name = "DT_INCLUDE_REGT")

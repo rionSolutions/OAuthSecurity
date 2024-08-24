@@ -18,7 +18,7 @@ public class AuthController {
     this.oauthService = oauthService;
   }
 
-  @PostMapping("/login}")
+  @PostMapping("/getAccessToken}")
   public ResponseEntity<?> getTokenAccess(@RequestBody CredentialsDTO credentials) {
     log.info(credentials.toString());
     return ResponseEntity.ok().build();

@@ -3,7 +3,8 @@ package com.orionsolution.oauthsecurity.model;
 import lombok.Data;
 
 @Data
-public class CredentialsDTO {
+public class RequireSessionDTO {
     private String credential;
-    private String secretKey;
+    private String roleClient;
+    private String origin;
 }

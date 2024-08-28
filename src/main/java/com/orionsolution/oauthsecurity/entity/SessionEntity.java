@@ -25,6 +25,9 @@ public class SessionEntity implements Serializable {
   @JoinColumn(name = "credentials")
   private UserRoleEntity credentials;
 
+  @Column(name = "APP_HASH_ID")
+  private String applicaionHashId;
+
   @Column(name = "DT_INCLUDE_REGT")
   private LocalDateTime dtInclusion;
 

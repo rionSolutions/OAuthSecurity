@@ -2,6 +2,7 @@ package com.orionsolution.oauthsecurity.config;
 
 import com.orionsolution.oauthsecurity.entity.ApplicationEntity;
 import com.orionsolution.oauthsecurity.repository.ApplicationRepository;
+import com.orionsolution.oauthsecurity.utility.ApplicationKeyUtility;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Configuration
 @Slf4j
@@ -37,17 +39,27 @@ public class SecurityConfig extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-          throws ServletException, IOException {
+          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
     String authorizationHeader = request.getHeader("App-Key-Header");
-    if (authorizationHeader != null) {
-      ApplicationEntity application = applicationRepository.findByHashId(authorizationHeader);
-      if (authorizationHeader.equals(application.getHashId())) {
-        log.info("## LOGGED WITH APP {} ##", application.getApplicationName());
-        filterChain.doFilter(request, response);
-        return;
-      }
-    }
+    filterRequest(request, response, filterChain, authorizationHeader);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
+
+  private void filterRequest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String authorizationHeader) {
+    if (authorizationHeader != null) {
+      Optional<ApplicationEntity> application = applicationRepository.findByApplicationId(authorizationHeader);
+      application.ifPresentOrElse(app -> {
+        if (authorizationHeader.equals(app.getApplicationId())) {
+          log.info("## LOGGED WITH APP {} ##", app.getApplicationName());
+          ApplicationKeyUtility.setAppKey(authorizationHeader);
+          try {
+            filterChain.doFilter(request, response);
+          } catch (IOException | ServletException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }, () -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
+    }
+  }
+
 }

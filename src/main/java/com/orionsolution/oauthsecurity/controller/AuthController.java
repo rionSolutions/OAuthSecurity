@@ -1,10 +1,12 @@
 package com.orionsolution.oauthsecurity.controller;
 
 
+import com.orionsolution.oauthsecurity.model.AuthorizationDTO;
 import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import com.orionsolution.oauthsecurity.service.OauthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -19,13 +21,13 @@ public class AuthController {
     }
 
     @PostMapping("/requestAuthorization")
-    public ResponseEntity<?> requestAuthorization(@RequestBody RequireSessionDTO requireSessionDTO) {
-        return null;
+    public ResponseEntity<AuthorizationDTO> requestAuthorization(@RequestBody RequireSessionDTO requireSessionDTO) {
+        return ResponseEntity.ok(oauthService.requestAuthorization(requireSessionDTO));
     }
 
     @PostMapping("/registerAccessSession")
-    public ResponseEntity<?> registerAccessSession(@RequestBody RequireSessionDTO requireSessionDTO) {
-        return ResponseEntity.ok(oauthService.registerApplicationSession(requireSessionDTO));
+    public ResponseEntity<Jwt> registerAccessSession(@RequestBody RequireSessionDTO requireSessionDTO) {
+        return null;
     }
 
 

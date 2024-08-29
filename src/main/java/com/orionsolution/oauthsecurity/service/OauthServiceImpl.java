@@ -46,6 +46,14 @@ public class OauthServiceImpl implements OauthService {
 
         List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(applicationHeader);
 
+        SessionEntity sessionEntity = getSessionEntity(sessionDTO, applicationHeader);
+
+        sessionRepository.save(sessionEntity);
+
+        return new AuthorizationDTO(getJwt(sessionDTO, permissionAppDTOList));
+    }
+
+    private static SessionEntity getSessionEntity(RequireSessionDTO sessionDTO, String applicationHeader) {
         SessionEntity sessionEntity = new SessionEntity();
 
         sessionEntity.setCredentialId(sessionDTO.getCredential());
@@ -59,11 +67,7 @@ public class OauthServiceImpl implements OauthService {
 
         sessionEntity.setApplicationRole(applicationRole);
         sessionEntity.getApplicationRole().getApplicationEntity().setApplicationId(applicationHeader);
-
-
-        sessionRepository.save(sessionEntity);
-
-        return new AuthorizationDTO(getJwt(sessionDTO, permissionAppDTOList));
+        return sessionEntity;
     }
 
     private static String getJwt(RequireSessionDTO sessionDTO, List<PermissionAppDTO> permissionAppDTOList) {

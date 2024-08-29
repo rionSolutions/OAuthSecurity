@@ -1,0 +1,33 @@
+spring:
+  sql:
+    init:
+      mode: always
+  main:
+    banner-mode: console
+  application:
+    name: '@project.name@'
+  jpa:
+    database: postgresql
+    show-sql: true
+    properties:
+      jakarta:
+        persistence:
+          create-database-schemas: true
+      hibernate:
+        default_schema: "OAUTH"
+    hibernate:
+      ddl-auto: create-drop
+#    defer-datasource-initialization: true
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: admin
+  banner:
+    charset: UTF-8
+server:
+  port: 8081
+  servlet:
+    context-path: /oauth
+    encoding:
+      charset: '@project.build.sourceEncoding@'

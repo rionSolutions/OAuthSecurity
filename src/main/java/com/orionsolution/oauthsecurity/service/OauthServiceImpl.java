@@ -10,6 +10,7 @@ import com.orionsolution.oauthsecurity.repository.ApplicationRoleRepository;
 import com.orionsolution.oauthsecurity.repository.SessionRepository;
 import com.orionsolution.oauthsecurity.utility.ApplicationKeyUtility;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
@@ -38,15 +39,15 @@ public class OauthServiceImpl implements OauthService {
         return null;
     }
 
+    @Transactional
     @Override
     public AuthorizationDTO requestAuthorization(RequireSessionDTO sessionDTO) {
         String applicationHeader = ApplicationKeyUtility.getAppKey();
 
         List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(applicationHeader);
 
-        //TODO RESOLVER PROBLEMA DE SAVE
-
         SessionEntity sessionEntity = new SessionEntity();
+
         sessionEntity.setCredentialId(sessionDTO.getCredential());
         sessionEntity.setActive(false);
         sessionEntity.setDtInclusion(LocalDateTime.now());
@@ -57,11 +58,10 @@ public class OauthServiceImpl implements OauthService {
         applicationRole.setApplicationEntity(applicationEntity);
 
         sessionEntity.setApplicationRole(applicationRole);
-        sessionEntity.getApplicationRole().getApplicationEntity().setApplicationName(applicationHeader);
+        sessionEntity.getApplicationRole().getApplicationEntity().setApplicationId(applicationHeader);
 
-        sessionEntity.setId(1L);
 
-        sessionRepository.saveAndFlush(sessionEntity);
+        sessionRepository.save(sessionEntity);
 
         return new AuthorizationDTO(getJwt(sessionDTO, permissionAppDTOList));
     }
@@ -74,11 +74,11 @@ public class OauthServiceImpl implements OauthService {
             claims.put(PermissionAppDTO.getUniqueKey(permissionAppDTO), permissionAppDTO.getPermissionName());
         });
         final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-        return  Jwts.builder()
+        return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(sessionDTO.getCredential())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 )) // 1 minute
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60)) // 1 minute
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

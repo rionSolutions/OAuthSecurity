@@ -23,7 +23,7 @@ public class SessionEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tb_user_session_seq")
     @SequenceGenerator(name = "tb_user_session_seq", allocationSize = 1, schema = "oauth")
-    private Long id;
+    private Long id = 1L;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "APPLICATION_ID")

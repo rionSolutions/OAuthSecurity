@@ -25,7 +25,7 @@ public class SessionEntity implements Serializable {
     @SequenceGenerator(name = "tb_user_session_seq", allocationSize = 1, schema = "oauth")
     private Long id = 1L;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "APPLICATION_ID")
     private ApplicationRoleEntity applicationRole;
 

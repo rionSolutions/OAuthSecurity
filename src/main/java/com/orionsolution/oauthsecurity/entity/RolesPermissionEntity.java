@@ -19,7 +19,7 @@ public class RolesPermissionEntity {
   @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
   private RolesEntity role;
 
-  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+  @ManyToOne(fetch = FetchType.EAGER)
   private PermissionsEntity permission;
 
 }

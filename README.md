@@ -1,1 +1,1 @@
-![](https://github.com/rionSolutions/OAuthSecurity/blob/develop/Backend%20-%20Oauth.jpg)
+![Solução provisória](https://github.com/rionSolutions/OAuthSecurity/blob/develop/Backend%20-%20Oauth.jpg)

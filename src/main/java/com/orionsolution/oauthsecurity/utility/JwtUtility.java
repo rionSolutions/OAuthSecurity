@@ -4,6 +4,7 @@ import com.orionsolution.oauthsecurity.entity.PermissionsEntity;
 import com.orionsolution.oauthsecurity.entity.SessionEntity;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,14 @@ import java.util.*;
 @Slf4j
 public final class JwtUtility {
 
+    public static Claims getClaims(SecretKey secretKey, String authorizationHeader) {
+        return Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getEncoded()))
+                .build()
+                .parseClaimsJws(authorizationHeader)
+                .getBody();
+    }
+
     public static SecretKey recoverSecretKey(RequireSessionDTO sessionDTO,
                                              SessionEntity session,
                                              List<PermissionsEntity> permissionsEntityList) {
@@ -25,6 +34,7 @@ public final class JwtUtility {
 
         permissionsEntityList.forEach(permissionEntity -> aggregateKey.append('.').append(permissionEntity.getPermissionName()));
         log.info("Recovered secret key: {}", aggregateKey);
+
         return Keys.hmacShaKeyFor(Base64.getEncoder().encode(aggregateKey.toString().getBytes(StandardCharsets.UTF_8)));
     }
 

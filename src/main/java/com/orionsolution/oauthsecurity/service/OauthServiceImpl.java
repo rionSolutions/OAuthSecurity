@@ -48,14 +48,9 @@ public class OauthServiceImpl implements OauthService {
                 permissionsRepository.getPermissionsEntityByRoleId(session.getApplicationRole().getRoleCode().getId());
 
         SecretKey secretKey = JwtUtility.recoverSecretKey(sessionDTO, session, permissionsEntityList);
-
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getEncoded()))
-                .build()
-                .parseClaimsJws(authorizationHeader)
-                .getBody();
-
+        Claims claims = JwtUtility.getClaims(secretKey, authorizationHeader);
         String appKey = session.getApplicationRole().getApplicationEntity().getApplicationId();
+
         SessionEntity sessionEntity =
                 SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.TRUE, session.getId());
 
@@ -63,6 +58,7 @@ public class OauthServiceImpl implements OauthService {
 
         return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, claims, secretKey));
     }
+
 
     @Transactional
     @Override

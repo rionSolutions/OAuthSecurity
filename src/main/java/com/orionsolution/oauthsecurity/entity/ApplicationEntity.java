@@ -11,6 +11,7 @@ import lombok.ToString;
 @ToString
 @Table(name = "TB_APPLICATION", schema = "OAUTH")
 public class ApplicationEntity {
+
     @Id
     @Column(name = "APPLICATION_ID")
     private String applicationId;

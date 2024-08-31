@@ -12,6 +12,7 @@ import com.orionsolution.oauthsecurity.repository.SessionRepository;
 import com.orionsolution.oauthsecurity.utility.ApplicationKeyUtility;
 import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@Slf4j
 public class OauthServiceImpl implements OauthService {
 
     private final ApplicationRoleRepository applicationRoleRepository;
@@ -47,7 +49,7 @@ public class OauthServiceImpl implements OauthService {
                 permissionAppDTOList.stream().map(PermissionAppDTO::getApplicationName).findAny().orElse(""))) {
             SessionEntity sessionEntity = getSessionEntity(sessionDTO, applicationHeader);
             sessionRepository.save(sessionEntity);
-            return new AuthorizationDTO(getJwt(sessionDTO, permissionAppDTOList));
+            return new AuthorizationDTO(getJwt(sessionDTO, permissionAppDTOList, applicationHeader));
         }
         throw new BusinessException.HandlerException("Application not authorized", HttpStatus.UNAUTHORIZED);
     }
@@ -66,21 +68,28 @@ public class OauthServiceImpl implements OauthService {
         return sessionEntity;
     }
 
-    private static String getJwt(RequireSessionDTO sessionDTO, List<PermissionAppDTO> permissionAppDTOList) {
+    private static String getJwt(RequireSessionDTO sessionDTO, List<PermissionAppDTO> permissionAppDTOList, String applicationHeader) {
         Map<String, Object> claims = new HashMap<>();
         Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "HS256");
+        headers.put("alg", "SHA512");
+        headers.put("typ", "JWT");
+
+        StringBuilder aggregateKey = new StringBuilder().append(applicationHeader).append(sessionDTO.getCredential());
 
         permissionAppDTOList.forEach(permissionAppDTO -> {
             claims.put(
-                    PermissionAppDTO.getUniqueKey(permissionAppDTO), Base64.getEncoder().encode(
-                            permissionAppDTO.getPermissionName().getBytes(StandardCharsets.UTF_8)));
+                    PermissionAppDTO.getUniqueKey(permissionAppDTO),
+                    Base64.getEncoder().encode(permissionAppDTO.getPermissionName().getBytes(StandardCharsets.UTF_8)));
+            aggregateKey.append('.').append(permissionAppDTO.getPermissionName());
         });
 
-        final SecretKey secretKey = Keys.hmacShaKeyFor(sessionDTO.getCredential().getBytes(StandardCharsets.UTF_8));
+        //signature is  HMACSHA512(aggregateKey) composed by applicationHeader and sessionDTO.getCredential() more permissionAppDTOList
+        final SecretKey secretKey = Keys.hmacShaKeyFor(Base64.getEncoder().encode(aggregateKey.toString().getBytes(StandardCharsets.UTF_8)));
 
         return Jwts.builder()
                 .setClaims(claims)
+                .setHeader(headers)
+                .setAudience("https://orion-softwares.com.br")
                 .setSubject(sessionDTO.getCredential())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60)) // 1 minute

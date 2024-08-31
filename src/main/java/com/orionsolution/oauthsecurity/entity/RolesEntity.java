@@ -12,10 +12,10 @@ import lombok.ToString;
 @Table(name = "TB_ROLES", schema = "OAUTH")
 public class RolesEntity {
 
-  @Id
-  private Long id;
+    @Id
+    private Long id;
 
-  @Column(name = "ROLE_NAME")
-  private String roleName;
+    @Column(name = "ROLE_NAME")
+    private String roleName;
 
 }

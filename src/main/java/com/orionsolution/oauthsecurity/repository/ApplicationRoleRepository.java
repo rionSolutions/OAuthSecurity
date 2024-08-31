@@ -2,7 +2,6 @@ package com.orionsolution.oauthsecurity.repository;
 
 
 import com.orionsolution.oauthsecurity.entity.ApplicationEntity;
-import com.orionsolution.oauthsecurity.entity.ApplicationRoleEntity;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +19,7 @@ public interface ApplicationRoleRepository extends JpaRepository<ApplicationEnti
             " AND perm.role.id = approle.roleCode.id " +
             " AND perm.role.id = roles.id " +
             " AND pe.id = perm.permission.id" +
-            " AND app.applicationId = :applicationId  " )
+            " AND app.applicationId = :applicationId  " +
+            " ORDER BY pe.id DESC " )
     List<PermissionAppDTO> findRoleByApplicationId(String applicationId);
 }

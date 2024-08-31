@@ -24,42 +24,48 @@ import java.util.Optional;
 @EnableWebSecurity
 public class SecurityConfig extends OncePerRequestFilter {
 
-  private final ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-  public SecurityConfig(ApplicationRepository applicationRepository) {
-    this.applicationRepository = applicationRepository;
-  }
-
-  @Bean
-  public SecurityFilterChain filterChain (HttpSecurity httpSecurity) throws Exception {
-    return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
-        .build();
-  }
-
-  @Override
-  protected void doFilterInternal(
-          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-    String authorizationHeader = request.getHeader("App-Key-Header");
-    filterRequest(request, response, filterChain, authorizationHeader);
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-  }
-
-  private void filterRequest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String authorizationHeader) {
-    if (authorizationHeader != null) {
-      Optional<ApplicationEntity> application = applicationRepository.findByApplicationId(authorizationHeader);
-      application.ifPresentOrElse(app -> {
-        if (authorizationHeader.equals(app.getApplicationId())) {
-          log.info("## LOGGED WITH APP {} ##", app.getApplicationName());
-          ApplicationKeyUtility.setAppKey(authorizationHeader);
-          try {
-            filterChain.doFilter(request, response);
-          } catch (IOException | ServletException e) {
-            throw new RuntimeException(e);
-          }
-        }
-      }, () -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
+    public SecurityConfig(ApplicationRepository applicationRepository) {
+        this.applicationRepository = applicationRepository;
     }
-  }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+                .build();
+    }
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+        String appKeyHeader = request.getHeader("App-Key-Header");
+        String authorizationHeader = request.getHeader("Authorization");
+        filterRequest(request, response, filterChain, appKeyHeader, authorizationHeader);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    private void filterRequest(HttpServletRequest request,
+                               HttpServletResponse response,
+                               FilterChain filterChain,
+                               String appKeyHeader,
+                               String authorizationHeader) {
+        if (appKeyHeader != null) {
+            Optional<ApplicationEntity> application = applicationRepository.findByApplicationId(appKeyHeader);
+            application.ifPresentOrElse(app -> {
+                if (appKeyHeader.equals(app.getApplicationId())) {
+                    log.info("## LOGGED WITH APP {} ##", app.getApplicationName());
+                    ApplicationKeyUtility.setAppKey(appKeyHeader);
+                    ApplicationKeyUtility.setAuthorization(authorizationHeader);
+                    try {
+                        filterChain.doFilter(request, response);
+                    } catch (IOException | ServletException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }, () -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
+        }
+    }
 
 }

@@ -6,7 +6,6 @@ import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import com.orionsolution.oauthsecurity.service.OauthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -20,14 +19,24 @@ public class AuthController {
         this.oauthService = oauthService;
     }
 
+    /**
+     * @param requireSessionDTO
+     * @return AuthorizationDTO
+     * @Note Application request authorization for validate your credentials
+     */
     @PostMapping("/requestAuthorization")
     public ResponseEntity<AuthorizationDTO> requestAuthorization(@RequestBody RequireSessionDTO requireSessionDTO) {
         return ResponseEntity.ok(oauthService.requestAuthorization(requireSessionDTO));
     }
 
-    @PostMapping("/registerAccessSession")
-    public ResponseEntity<Jwt> registerAccessSession(@RequestBody RequireSessionDTO requireSessionDTO) {
-        return null;
+    /**
+     * @param requireSessionDTO
+     * @return AuthorizationDTO
+     * @Note Application request access session for validate if the credentials received is secure and turn the session active
+     */
+    @PostMapping("/requestAccessSession")
+    public ResponseEntity<AuthorizationDTO> registerAccessSession(@RequestBody RequireSessionDTO requireSessionDTO) {
+        return ResponseEntity.ok(oauthService.registerApplicationSession(requireSessionDTO));
     }
 
 

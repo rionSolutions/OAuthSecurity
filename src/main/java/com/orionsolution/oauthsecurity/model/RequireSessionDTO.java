@@ -6,4 +6,5 @@ import lombok.Data;
 public class RequireSessionDTO {
     private String credential;
     private String origin;
+    private String required;
 }

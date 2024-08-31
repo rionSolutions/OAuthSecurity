@@ -15,8 +15,9 @@ spring:
           create-database-schemas: true
       hibernate:
         default_schema: "OAUTH"
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
 #    defer-datasource-initialization: true
   datasource:
     driver-class-name: org.postgresql.Driver

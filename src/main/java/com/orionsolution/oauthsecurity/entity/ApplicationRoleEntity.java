@@ -14,16 +14,16 @@ import java.time.LocalDateTime;
 @Table(name = "TB_APP_ROLE", schema = "OAUTH")
 public class ApplicationRoleEntity {
 
-  @Id
-  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-  @JoinColumn(name = "APPLICATION_ID")
-  private ApplicationEntity applicationEntity;
+    @Id
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "APPLICATION_ID")
+    private ApplicationEntity applicationEntity;
 
-  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-  @JoinColumn(name = "roleCode")
-  private RolesEntity roleCode;
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "roleCode")
+    private RolesEntity roleCode;
 
-  @Column(name = "DT_INCLUDE_REGT")
-  private LocalDateTime dtInclusion;
+    @Column(name = "DT_INCLUDE_REGT")
+    private LocalDateTime dtInclusion;
 
 }

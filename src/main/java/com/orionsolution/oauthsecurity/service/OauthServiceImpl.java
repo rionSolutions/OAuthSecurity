@@ -1,90 +1,75 @@
 package com.orionsolution.oauthsecurity.service;
 
-import com.orionsolution.oauthsecurity.entity.ApplicationEntity;
-import com.orionsolution.oauthsecurity.entity.ApplicationRoleEntity;
+import com.orionsolution.oauthsecurity.entity.PermissionsEntity;
 import com.orionsolution.oauthsecurity.entity.SessionEntity;
+import com.orionsolution.oauthsecurity.exception.BusinessException;
 import com.orionsolution.oauthsecurity.model.AuthorizationDTO;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import com.orionsolution.oauthsecurity.repository.ApplicationRoleRepository;
+import com.orionsolution.oauthsecurity.repository.PermissionsRepository;
 import com.orionsolution.oauthsecurity.repository.SessionRepository;
 import com.orionsolution.oauthsecurity.utility.ApplicationKeyUtility;
-import io.jsonwebtoken.security.Keys;
+import com.orionsolution.oauthsecurity.utility.JwtUtility;
+import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
-import org.springframework.security.oauth2.jwt.Jwt;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.crypto.SecretKey;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Service
+@Slf4j
 public class OauthServiceImpl implements OauthService {
 
     private final ApplicationRoleRepository applicationRoleRepository;
     private final SessionRepository sessionRepository;
+    private final PermissionsRepository permissionsRepository;
 
-    public OauthServiceImpl(ApplicationRoleRepository applicationRoleRepository, SessionRepository sessionRepository) {
+    public OauthServiceImpl(ApplicationRoleRepository applicationRoleRepository, SessionRepository sessionRepository, PermissionsRepository permissionsRepository) {
         this.applicationRoleRepository = applicationRoleRepository;
         this.sessionRepository = sessionRepository;
+        this.permissionsRepository = permissionsRepository;
     }
 
     @Override
-    public Jwt registerApplicationSession(RequireSessionDTO sessionDTO) {
-        return null;
+    public AuthorizationDTO registerApplicationSession(RequireSessionDTO sessionDTO) {
+        String authorizationHeader = ApplicationKeyUtility.getAuthorization();
+        List<SessionEntity> sessionList = sessionRepository.getByCredentialSessionWithLimit(sessionDTO.getCredential());
+        SessionEntity session = sessionList.stream().findFirst().orElseThrow(
+                () -> new BusinessException.HandlerException("Session not found", HttpStatus.UNAUTHORIZED));
+
+        List<PermissionsEntity> permissionsEntityList =
+                permissionsRepository.getPermissionsEntityByRoleId(session.getApplicationRole().getRoleCode().getId());
+
+        SecretKey secretKey = JwtUtility.recoverSecretKey(sessionDTO, session, permissionsEntityList);
+        Claims claims = JwtUtility.getClaims(secretKey, authorizationHeader);
+        String appKey = session.getApplicationRole().getApplicationEntity().getApplicationId();
+
+        SessionEntity sessionEntity =
+                SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.TRUE, session.getId());
+
+        sessionRepository.saveAndFlush(sessionEntity);
+
+        return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, claims, secretKey));
     }
+
 
     @Transactional
     @Override
     public AuthorizationDTO requestAuthorization(RequireSessionDTO sessionDTO) {
-        String applicationHeader = ApplicationKeyUtility.getAppKey();
-
-        List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(applicationHeader);
-
-        SessionEntity sessionEntity = getSessionEntity(sessionDTO, applicationHeader);
-
-        sessionRepository.save(sessionEntity);
-
-        return new AuthorizationDTO(getJwt(sessionDTO, permissionAppDTOList));
-    }
-
-    private static SessionEntity getSessionEntity(RequireSessionDTO sessionDTO, String applicationHeader) {
-        SessionEntity sessionEntity = new SessionEntity();
-
-        sessionEntity.setCredentialId(sessionDTO.getCredential());
-        sessionEntity.setActive(false);
-        sessionEntity.setDtInclusion(LocalDateTime.now());
-        sessionEntity.setDtExpiration(LocalDateTime.now().plusMinutes(1));
-
-        ApplicationRoleEntity applicationRole = new ApplicationRoleEntity();
-        ApplicationEntity applicationEntity = new ApplicationEntity();
-        applicationRole.setApplicationEntity(applicationEntity);
-
-        sessionEntity.setApplicationRole(applicationRole);
-        sessionEntity.getApplicationRole().getApplicationEntity().setApplicationId(applicationHeader);
-        return sessionEntity;
-    }
-
-    private static String getJwt(RequireSessionDTO sessionDTO, List<PermissionAppDTO> permissionAppDTOList) {
-        Map<String, Object> claims = new HashMap<>();
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "HS256");
-        permissionAppDTOList.forEach(permissionAppDTO -> {
-            claims.put(PermissionAppDTO.getUniqueKey(permissionAppDTO), permissionAppDTO.getPermissionName());
-        });
-        final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(sessionDTO.getCredential())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60)) // 1 minute
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+        String appKey = ApplicationKeyUtility.getAppKey();
+        List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(appKey);
+        if (permissionAppDTOList != null && sessionDTO.getOrigin().equals(
+                permissionAppDTOList.stream().map(PermissionAppDTO::getApplicationName).findAny().orElse(""))) {
+            SessionEntity sessionEntity = SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.FALSE, BigDecimal.ONE.longValue());
+            sessionRepository.save(sessionEntity);
+            return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, permissionAppDTOList, appKey));
+        }
+        throw new BusinessException.HandlerException("Application not authorized", HttpStatus.UNAUTHORIZED);
     }
 
 }

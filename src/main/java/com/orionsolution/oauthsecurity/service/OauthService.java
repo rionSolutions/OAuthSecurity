@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface OauthService {
 
-    Jwt registerApplicationSession(RequireSessionDTO sessionDTO);
+    AuthorizationDTO registerApplicationSession(RequireSessionDTO sessionDTO);
 
     AuthorizationDTO requestAuthorization(RequireSessionDTO sessionDTO);
 }

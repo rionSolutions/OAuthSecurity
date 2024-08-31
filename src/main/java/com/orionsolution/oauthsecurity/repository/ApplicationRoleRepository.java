@@ -20,6 +20,7 @@ public interface ApplicationRoleRepository extends JpaRepository<ApplicationEnti
             " AND perm.role.id = approle.roleCode.id " +
             " AND perm.role.id = roles.id " +
             " AND pe.id = perm.permission.id" +
-            " AND app.applicationId = :applicationId  " )
+            " AND app.applicationId = :applicationId  " +
+            " ORDER BY pe.id DESC " )
     List<PermissionAppDTO> findRoleByApplicationId(String applicationId);
 }

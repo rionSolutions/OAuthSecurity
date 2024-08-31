@@ -25,9 +25,9 @@ public class AuthController {
         return ResponseEntity.ok(oauthService.requestAuthorization(requireSessionDTO));
     }
 
-    @PostMapping("/registerAccessSession")
-    public ResponseEntity<Jwt> registerAccessSession(@RequestBody RequireSessionDTO requireSessionDTO) {
-        return null;
+    @PostMapping("/requestAccessSession")
+    public ResponseEntity<AuthorizationDTO> registerAccessSession(@RequestBody RequireSessionDTO requireSessionDTO) {
+        return ResponseEntity.ok(oauthService.registerApplicationSession(requireSessionDTO));
     }
 
 

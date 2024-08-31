@@ -12,8 +12,6 @@ import com.orionsolution.oauthsecurity.repository.SessionRepository;
 import com.orionsolution.oauthsecurity.utility.ApplicationKeyUtility;
 import com.orionsolution.oauthsecurity.utility.JwtUtility;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

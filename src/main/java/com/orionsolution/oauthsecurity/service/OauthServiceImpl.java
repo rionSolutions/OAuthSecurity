@@ -50,7 +50,7 @@ public class OauthServiceImpl implements OauthService {
         String appKey = session.getApplicationRole().getApplicationEntity().getApplicationId();
 
         SessionEntity sessionEntity =
-                SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.TRUE, session.getId());
+                SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.TRUE, session.getId(), BigDecimal.TEN.longValue());
 
         sessionRepository.saveAndFlush(sessionEntity);
 
@@ -65,7 +65,7 @@ public class OauthServiceImpl implements OauthService {
         List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(appKey);
         if (permissionAppDTOList != null && sessionDTO.getOrigin().equals(
                 permissionAppDTOList.stream().map(PermissionAppDTO::getApplicationName).findAny().orElse(""))) {
-            SessionEntity sessionEntity = SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.FALSE, BigDecimal.ONE.longValue());
+            SessionEntity sessionEntity = SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.FALSE, BigDecimal.ONE.longValue(), BigDecimal.ONE.longValue());
             sessionRepository.save(sessionEntity);
             return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, permissionAppDTOList, appKey));
         }

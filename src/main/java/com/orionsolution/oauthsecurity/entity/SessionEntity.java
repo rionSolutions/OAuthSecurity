@@ -45,13 +45,14 @@ public class SessionEntity implements Serializable {
     public static SessionEntity getSessionEntity(RequireSessionDTO sessionDTO,
                                                  String applicationHeader,
                                                  Boolean active,
-                                                 Long id) {
+                                                 Long id,
+                                                 Long duration) {
         SessionEntity sessionEntity = new SessionEntity();
         sessionEntity.setId(id);
         sessionEntity.setCredentialId(sessionDTO.getCredential());
         sessionEntity.setActive(active);
         sessionEntity.setDtInclusion(LocalDateTime.now());
-        sessionEntity.setDtExpiration(LocalDateTime.now().plusMinutes(1));
+        sessionEntity.setDtExpiration(LocalDateTime.now().plusMinutes(duration));
         ApplicationRoleEntity applicationRole = new ApplicationRoleEntity();
         ApplicationEntity applicationEntity = new ApplicationEntity();
         applicationRole.setApplicationEntity(applicationEntity);

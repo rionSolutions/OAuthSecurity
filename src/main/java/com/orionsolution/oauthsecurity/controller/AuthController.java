@@ -6,7 +6,6 @@ import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import com.orionsolution.oauthsecurity.service.OauthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j

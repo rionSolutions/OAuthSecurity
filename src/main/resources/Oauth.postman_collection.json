@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "c18ac525-f2d6-41af-b610-399a3edb0f35",
+		"name": "Oauth",
+		"description": "Request authorization by key-header, it have roles of access",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16126831"
+	},
+	"item": [
+		{
+			"name": "requestAuthorization",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract the token from the response",
+							"var jsonData = pm.response.json();",
+							"var token = jsonData.token;",
+							"",
+							"// Save the token in a Postman environment variable",
+							"pm.environment.set(\"token\", token);",
+							"",
+							"// Verify that the token is saved correctly",
+							"pm.test(\"Token is saved as environment variable\", function () {",
+							"    pm.expect(pm.environment.get(\"token\")).to.eql(token);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate a 256-bit random key using a different method",
+							"function generate256BitKey() {",
+							"    var array = [];",
+							"    for (var i = 0; i < 32; i++) {",
+							"        array.push(Math.floor(Math.random() * 256));",
+							"    }",
+							"    return array.map(byte => ('00' + byte.toString(16)).slice(-2)).join('');",
+							"}",
+							"",
+							"var randomKey = generate256BitKey();",
+							"",
+							"// Set the random key in a Postman environment variable",
+							"pm.environment.set(\"random\", randomKey);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "App-Key-Header",
+						"value": "2edfe44e09c15dd92e0803ed2db1a4fae58151b4df146b4015884cc5565200ef",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n     \"credential\": \"{{random}}\",\n     \"origin\" : \"ORION_APP_MOBILE\" //EU SOU\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/oauth/api/v1/requestAuthorization",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"oauth",
+						"api",
+						"v1",
+						"requestAuthorization"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "requestAccessToken",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "App-Key-Header",
+						"value": "d9156ff5e1eeb2b288b7499dfcd10bef99b592eaad4bfe3bf80f480082119b48",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n     \"credential\": \"{{random}}\",\n     \"origin\" : \"ORION_LOGIN\",  // EU SOU\n     \"required\" : \"ORION_APP_MOBILE\" //FOI CHAMADO POR\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/oauth/api/v1/requestAccessSession",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"oauth",
+						"api",
+						"v1",
+						"requestAccessSession"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

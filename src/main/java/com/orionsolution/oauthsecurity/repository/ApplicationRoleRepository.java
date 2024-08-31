@@ -2,7 +2,6 @@ package com.orionsolution.oauthsecurity.repository;
 
 
 import com.orionsolution.oauthsecurity.entity.ApplicationEntity;
-import com.orionsolution.oauthsecurity.entity.ApplicationRoleEntity;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

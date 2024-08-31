@@ -1,9 +1,6 @@
 package com.orionsolution.oauthsecurity.repository;
 
 import com.orionsolution.oauthsecurity.entity.PermissionsEntity;
-import com.orionsolution.oauthsecurity.entity.SessionEntity;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

@@ -1,6 +1,5 @@
 package com.orionsolution.oauthsecurity.repository;
 
-import com.orionsolution.oauthsecurity.entity.ApplicationEntity;
 import com.orionsolution.oauthsecurity.entity.SessionEntity;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface SessionRepository extends JpaRepository<SessionEntity, String> {

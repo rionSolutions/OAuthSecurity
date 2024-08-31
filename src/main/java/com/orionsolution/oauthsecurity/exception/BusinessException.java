@@ -1,7 +1,6 @@
 package com.orionsolution.oauthsecurity.exception;
 
 
-import com.orionsolution.oauthsecurity.model.ErrorDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -26,18 +25,18 @@ public class BusinessException {
     }
 
     @ExceptionHandler(HandlerException.class)
-    public ResponseEntity<ErrorDTO> businessException(HandlerException ex) {
-        return new ResponseEntity<>(new ErrorDTO(ex.message, ex.status.value()), ex.status);
+    public ResponseEntity<Error> businessException(HandlerException ex) {
+        return new ResponseEntity<>(new Error(ex.message, ex.status.value()), ex.status);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorDTO> dataException(DataIntegrityViolationException ex) {
-        return new ResponseEntity<>(new ErrorDTO("Cannot process, because should have use valid and unique credential",
+    public ResponseEntity<Error> dataException(DataIntegrityViolationException ex) {
+        return new ResponseEntity<>(new Error("Cannot process, because should have use valid and unique credential",
                 HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY);
     }
     @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ErrorDTO> jwtExpirated(ExpiredJwtException ex) {
-        return new ResponseEntity<>(new ErrorDTO(ex.getMessage(),
+    public ResponseEntity<Error> jwtExpirated(ExpiredJwtException ex) {
+        return new ResponseEntity<>(new Error(ex.getMessage(),
                 HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
     }
 

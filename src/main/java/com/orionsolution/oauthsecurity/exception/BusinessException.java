@@ -36,13 +36,19 @@ public class BusinessException {
                 HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY);
     }
     @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<Error> jwtExpirated(ExpiredJwtException ex) {
+    public ResponseEntity<Error> expiredJwtException(ExpiredJwtException ex) {
         return new ResponseEntity<>(new Error(ex.getMessage(),
                 HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<Error> jwtExpirated(MalformedJwtException ex) {
+    public ResponseEntity<Error> malformedJwtException(MalformedJwtException ex) {
+        return new ResponseEntity<>(new Error(ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Error> runtimeException(RuntimeException ex) {
         return new ResponseEntity<>(new Error(ex.getMessage(),
                 HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
     }

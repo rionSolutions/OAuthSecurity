@@ -41,14 +41,17 @@ public class OauthServiceImpl implements OauthService {
     @Override
     public AuthorizationDTO refreshTokenAccess(RequireSessionDTO requireSessionDTO) {
         SessionRegister result = getSessionRegister(requireSessionDTO);
-        return getAuthorizationDTO(requireSessionDTO, result);
+        return getAuthorizationDTO(requireSessionDTO, result , Boolean.FALSE);
     }
 
-    private AuthorizationDTO getAuthorizationDTO(RequireSessionDTO requireSessionDTO, SessionRegister result) {
+    private AuthorizationDTO getAuthorizationDTO(RequireSessionDTO requireSessionDTO, SessionRegister result, Boolean active) {
         // Save new session
+        if (!result.session.getActive() && !active) {
+            throw new BusinessException.HandlerException("Session is not active", HttpStatus.UNAUTHORIZED);
+        }
         String appKey = result.session().getApplicationRole().getApplicationEntity().getApplicationId();
         SessionEntity sessionEntity =
-                SessionEntity.getSessionEntity(requireSessionDTO, appKey, Boolean.TRUE, result.session().getId(), BigDecimal.TEN.longValue());
+                SessionEntity.getSessionEntity(requireSessionDTO, appKey, active, result.session().getId(), BigDecimal.TEN.longValue());
         sessionRepository.saveAndFlush(sessionEntity);
         return new AuthorizationDTO(JwtUtility.getJWT(requireSessionDTO, result.claims(), result.secretKey()));
     }
@@ -59,7 +62,7 @@ public class OauthServiceImpl implements OauthService {
         // Validate permissions
         JwtUtility.validatePermissions(sessionDTO, result.claims(), result.permissionsList());
         // Save new session
-        return getAuthorizationDTO(sessionDTO, result);
+        return getAuthorizationDTO(sessionDTO, result , Boolean.TRUE);
     }
 
     private SessionRegister getSessionRegister(RequireSessionDTO sessionDTO) {

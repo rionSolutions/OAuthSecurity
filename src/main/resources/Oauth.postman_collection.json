@@ -69,7 +69,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n     \"credential\": \"{{random}}\",\n     \"origin\" : \"ORION_APP_MOBILE\" //EU SOU\n}",
+					"raw": "{\n     \"credential\": \"{{random}}\",\n     \"origin\" : \"MOBILE\" //EU SOU\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -95,6 +95,28 @@
 		},
 		{
 			"name": "requestAccessToken",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract the token from the response",
+							"var jsonData = pm.response.json();",
+							"var token = jsonData.token;",
+							"",
+							"// Save the token in a Postman environment variable",
+							"pm.environment.set(\"token\", token);",
+							"",
+							"// Verify that the token is saved correctly",
+							"pm.test(\"Token is saved as environment variable\", function () {",
+							"    pm.expect(pm.environment.get(\"token\")).to.eql(token);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -116,7 +138,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n     \"credential\": \"{{random}}\",\n     \"origin\" : \"ORION_LOGIN\",  // EU SOU\n     \"required\" : \"ORION_APP_MOBILE\" //FOI CHAMADO POR\n}",
+					"raw": "{\n     \"credential\": \"{{random}}\",\n     \"origin\" : \"LOGIN\",  // EU SOU\n     \"required\" : \"PANEL\" //FOI CHAMADO POR\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -135,6 +157,58 @@
 						"api",
 						"v1",
 						"requestAccessSession"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refreshTokenAccess",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// After",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "App-Key-Header",
+						"value": "2edfe44e09c15dd92e0803ed2db1a4fae58151b4df146b4015884cc5565200ef",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"{{token}}\",\n    \"credential\": \"{{random}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/oauth/api/v1/refreshTokenAccess",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"oauth",
+						"api",
+						"v1",
+						"refreshTokenAccess"
 					]
 				}
 			},

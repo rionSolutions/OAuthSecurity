@@ -20,7 +20,6 @@ public class AuthController {
     }
 
     /**
-     * @param requireSessionDTO
      * @return AuthorizationDTO
      * @Note Application request authorization for validate your credentials
      */
@@ -30,7 +29,6 @@ public class AuthController {
     }
 
     /**
-     * @param requireSessionDTO
      * @return AuthorizationDTO
      * @Note Application request access session for validate if the credentials received is secure and turn the session active
      */
@@ -39,17 +37,14 @@ public class AuthController {
         return ResponseEntity.ok(oauthService.registerApplicationSession(requireSessionDTO));
     }
 
-
+    /**
+     * @return AuthorizationDTO
+     * @Note Application request refresh token access for validate if the credentials received is secure and turn the session active
+     */
     @PostMapping("/refreshTokenAccess")
-    public ResponseEntity<?> refreshTokenAccess(@RequestHeader(name = "authorization") String token) {
-        log.info(token);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AuthorizationDTO> refreshTokenAccess(@RequestBody RequireSessionDTO requireSessionDTO) {
+        return ResponseEntity.ok(oauthService.refreshTokenAccess(requireSessionDTO));
     }
 
-    @PostMapping("/verifyRoleAccess")
-    public ResponseEntity<?> verifyRoleAccess(@RequestHeader(name = "authorization") String token) {
-        log.info(token);
-        return ResponseEntity.ok().build();
-    }
 
 }

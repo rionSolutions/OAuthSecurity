@@ -6,6 +6,8 @@ import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 
 public interface OauthService {
 
+    AuthorizationDTO refreshTokenAccess(RequireSessionDTO requireSessionDTO);
+
     AuthorizationDTO registerApplicationSession(RequireSessionDTO sessionDTO);
 
     AuthorizationDTO requestAuthorization(RequireSessionDTO sessionDTO);

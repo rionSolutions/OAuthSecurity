@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.math.BigDecimal;
+
 import java.util.List;
 
 @Service
@@ -29,32 +30,63 @@ public class OauthServiceImpl implements OauthService {
     private final SessionRepository sessionRepository;
     private final PermissionsRepository permissionsRepository;
 
-    public OauthServiceImpl(ApplicationRoleRepository applicationRoleRepository, SessionRepository sessionRepository, PermissionsRepository permissionsRepository) {
+    public OauthServiceImpl(ApplicationRoleRepository applicationRoleRepository,
+                            SessionRepository sessionRepository,
+                            PermissionsRepository permissionsRepository) {
         this.applicationRoleRepository = applicationRoleRepository;
         this.sessionRepository = sessionRepository;
         this.permissionsRepository = permissionsRepository;
     }
 
     @Override
+    public AuthorizationDTO refreshTokenAccess(RequireSessionDTO requireSessionDTO) {
+        SessionRegister result = getSessionRegister(requireSessionDTO);
+        return getAuthorizationDTO(requireSessionDTO, result);
+    }
+
+    private AuthorizationDTO getAuthorizationDTO(RequireSessionDTO requireSessionDTO, SessionRegister result) {
+        // Save new session
+        String appKey = result.session().getApplicationRole().getApplicationEntity().getApplicationId();
+        SessionEntity sessionEntity =
+                SessionEntity.getSessionEntity(requireSessionDTO, appKey, Boolean.TRUE, result.session().getId(), BigDecimal.TEN.longValue());
+        sessionRepository.saveAndFlush(sessionEntity);
+        return new AuthorizationDTO(JwtUtility.getJWT(requireSessionDTO, result.claims(), result.secretKey()));
+    }
+
+    @Override
     public AuthorizationDTO registerApplicationSession(RequireSessionDTO sessionDTO) {
-        String authorizationHeader = ApplicationKeyUtility.getAuthorization();
+        SessionRegister result = getSessionRegister(sessionDTO);
+        // Validate permissions
+        JwtUtility.validatePermissions(sessionDTO, result.claims(), result.permissionsList());
+        // Save new session
+        return getAuthorizationDTO(sessionDTO, result);
+    }
+
+    private SessionRegister getSessionRegister(RequireSessionDTO sessionDTO) {
+        // Get authorization header
+        String authorizationHeader = ApplicationKeyUtility.getAuthorization(sessionDTO);
+
+        // Get session by credential
         List<SessionEntity> sessionList = sessionRepository.getByCredentialSessionWithLimit(sessionDTO.getCredential());
+
+        // Validate if session exists
         SessionEntity session = sessionList.stream().findFirst().orElseThrow(
                 () -> new BusinessException.HandlerException("Session not found", HttpStatus.UNAUTHORIZED));
 
-        List<PermissionsEntity> permissionsEntityList =
+        // Get permissions register in pre-session
+        List<PermissionsEntity> permissionsList =
                 permissionsRepository.getPermissionsEntityByRoleId(session.getApplicationRole().getRoleCode().getId());
 
-        SecretKey secretKey = JwtUtility.recoverSecretKey(sessionDTO, session, permissionsEntityList);
+        // Recover secret key
+        SecretKey secretKey = JwtUtility.recoverSecretKey(sessionDTO, session, permissionsList);
+
+        // Get claims
         Claims claims = JwtUtility.getClaims(secretKey, authorizationHeader);
-        String appKey = session.getApplicationRole().getApplicationEntity().getApplicationId();
+        return new SessionRegister(session, permissionsList, secretKey, claims);
+    }
 
-        SessionEntity sessionEntity =
-                SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.TRUE, session.getId(), BigDecimal.TEN.longValue());
-
-        sessionRepository.saveAndFlush(sessionEntity);
-
-        return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, claims, secretKey));
+    private record SessionRegister(SessionEntity session, List<PermissionsEntity> permissionsList, SecretKey secretKey,
+                                   Claims claims) {
     }
 
 

@@ -1,5 +1,6 @@
 package com.orionsolution.oauthsecurity.utility;
 
+import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import lombok.Getter;
 
 public class ApplicationKeyUtility {
@@ -17,5 +18,12 @@ public class ApplicationKeyUtility {
             authorization = authorization.split(" ")[1];
         }
         ApplicationKeyUtility.authorization = authorization;
+    }
+
+    public static String getAuthorization(RequireSessionDTO requireSessionDTO) {
+        if (requireSessionDTO.getToken() != null) {
+            return requireSessionDTO.getToken();
+        }
+        return authorization;
     }
 }

@@ -2,6 +2,7 @@ package com.orionsolution.oauthsecurity.exception;
 
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +40,12 @@ public class BusinessException {
         return new ResponseEntity<>(new Error(ex.getMessage(),
                 HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<Error> jwtExpirated(MalformedJwtException ex) {
+        return new ResponseEntity<>(new Error(ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
+    }
+
 
 }

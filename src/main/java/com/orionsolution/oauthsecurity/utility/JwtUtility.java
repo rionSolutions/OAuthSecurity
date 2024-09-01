@@ -4,7 +4,6 @@ import com.orionsolution.oauthsecurity.entity.PermissionsEntity;
 import com.orionsolution.oauthsecurity.entity.SessionEntity;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -14,15 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
-public final class JwtUtility {
+public final class JwtUtility extends DecodeUtility {
 
-    public static Claims getClaims(SecretKey secretKey, String authorizationHeader) {
-        return Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getEncoded()))
-                .build()
-                .parseClaimsJws(authorizationHeader)
-                .getBody();
-    }
 
     public static SecretKey recoverSecretKey(RequireSessionDTO sessionDTO,
                                              SessionEntity session,

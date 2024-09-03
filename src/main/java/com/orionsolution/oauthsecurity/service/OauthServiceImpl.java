@@ -51,7 +51,7 @@ public class OauthServiceImpl implements OauthService {
         }
         String appKey = result.session().getApplicationRole().getApplicationEntity().getApplicationId();
         SessionEntity sessionEntity =
-                SessionEntity.getSessionEntity(requireSessionDTO, appKey, active, result.session().getId(), BigDecimal.TEN.longValue());
+                SessionEntity.getSessionEntity(requireSessionDTO, appKey, !active, result.session().getId(), BigDecimal.TEN.longValue());
         sessionRepository.saveAndFlush(sessionEntity);
         return new AuthorizationDTO(JwtUtility.getJWT(requireSessionDTO, result.claims(), result.secretKey()));
     }

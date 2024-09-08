@@ -40,7 +40,7 @@ public class BusinessException extends RuntimeException{
 
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<Error> expiredJwtException(ExpiredJwtException ex) {
-        return new ResponseEntity<>(new Error(ex.getMessage(),
+        return new ResponseEntity<>(new Error("Token has expired",
                 HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
     }
 

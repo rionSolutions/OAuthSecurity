@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * AuthController handles OAuth-related requests such as authorization, session registration, and token refresh.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1")
@@ -18,12 +21,20 @@ public class AuthController {
 
     private final OauthService oauthService;
 
+    /**
+     * Constructs an AuthController with the specified OauthService.
+     *
+     * @param oauthService the service to handle OAuth operations
+     */
     public AuthController(OauthService oauthService) {
         this.oauthService = oauthService;
     }
 
     /**
-     * @return AuthorizationDTO
+     * Handles the request for authorization.
+     *
+     * @param formParams the form parameters containing the authorization request details
+     * @return a ResponseEntity containing the AuthorizationDTO
      * @Note Application request authorization for validate your credentials
      */
     @PostMapping(value = "/requestAuthorization", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -33,7 +44,10 @@ public class AuthController {
     }
 
     /**
-     * @return AuthorizationDTO
+     * Handles the request to register an access session.
+     *
+     * @param systemOrigin the origin of the system making the request
+     * @return a ResponseEntity containing the AuthorizationDTO
      * @Note Application request access session for validate if the credentials received is secure and turn the session active
      */
     @PostMapping("/requestAccessSession")
@@ -42,7 +56,10 @@ public class AuthController {
     }
 
     /**
-     * @return AuthorizationDTO
+     * Handles the request to refresh the token access.
+     *
+     * @param formParams the form parameters containing the refresh token request details
+     * @return a ResponseEntity containing the AuthorizationDTO
      * @Note Application request refresh token access for validate if the credentials received is secure and turn the session active
      */
     @PostMapping("/refreshTokenAccess")
@@ -50,6 +67,4 @@ public class AuthController {
         RequireSessionDTO requireSessionDTO = new RequireSessionDTO(formParams);
         return ResponseEntity.ok(oauthService.refreshTokenAccess(requireSessionDTO));
     }
-
-
 }

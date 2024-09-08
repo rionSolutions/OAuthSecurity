@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 @Table(name = "TB_APP_ROLE", schema = "OAUTH")
 public class ApplicationRoleEntity {
 
+    /**
+     * Application entity
+     */
     @Id
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "APPLICATION_ID")

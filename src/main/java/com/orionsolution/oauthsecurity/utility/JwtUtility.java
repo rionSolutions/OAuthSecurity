@@ -8,6 +8,7 @@ import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 
@@ -18,6 +19,10 @@ import java.util.*;
 @Slf4j
 public final class JwtUtility extends DecodeUtility {
 
+    /**
+     * @param token JWT
+     * @return subject from token
+     */
     public static String getSubjectFromToken(String token) {
         String tokenWithoutSign = token.split("\\.")[1];
         String jsonString = DecodeUtility.getDecoded(tokenWithoutSign);
@@ -25,8 +30,13 @@ public final class JwtUtility extends DecodeUtility {
         return jsonObject.getString("sub");
     }
 
-    public static SecretKey recoverSecretKey(SessionEntity session,
-                                             List<PermissionsEntity> permissionsEntityList) {
+    /**
+     * @param session               SessionEntity
+     * @param permissionsEntityList List<PermissionsEntity>
+     * @return SecretKey
+     */
+    public static @NotNull SecretKey recoverSecretKey(SessionEntity session,
+                                                      List<PermissionsEntity> permissionsEntityList) {
         StringBuilder aggregateKey = new StringBuilder();
         if (session != null && session.getApplicationRole() != null && session.getApplicationRole().getApplicationEntity() != null) {
             aggregateKey.append(session.getApplicationRole().getApplicationEntity().getApplicationId());
@@ -41,9 +51,7 @@ public final class JwtUtility extends DecodeUtility {
         return Keys.hmacShaKeyFor(Base64.getEncoder().encode(aggregateKey.toString().getBytes(StandardCharsets.UTF_8)));
     }
 
-    public static String getJWT(RequireSessionDTO sessionDTO,
-                                List<PermissionAppDTO> permissionAppDTOList) {
-
+    public static String getJWT(RequireSessionDTO sessionDTO, List<PermissionAppDTO> permissionAppDTOList) {
         Map<String, Object> claims = new HashMap<>();
         StringBuilder aggregateKey = new StringBuilder().append(sessionDTO.getClient_secret());
         permissionAppDTOList.forEach(permissionAppDTO -> {

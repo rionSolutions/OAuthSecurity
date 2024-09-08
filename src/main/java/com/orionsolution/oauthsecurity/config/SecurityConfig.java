@@ -1,7 +1,5 @@
 package com.orionsolution.oauthsecurity.config;
 
-import com.orionsolution.oauthsecurity.entity.ApplicationEntity;
-import com.orionsolution.oauthsecurity.repository.ApplicationRepository;
 import com.orionsolution.oauthsecurity.utility.ApplicationKeyUtility;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,23 +16,21 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Optional;
 
+/**
+ * SecurityConfig class configures the security settings for the application.
+ */
 @Configuration
 @Slf4j
 @EnableWebSecurity
 public class SecurityConfig extends OncePerRequestFilter {
 
-    private final ApplicationRepository applicationRepository;
-
-    public SecurityConfig(ApplicationRepository applicationRepository) {
-        this.applicationRepository = applicationRepository;
-    }
-
     /**
-     * @param httpSecurity httpSecurity
-     * @return SecurityFilterChain
-     * @throws Exception Exception
+     * Configures the security filter chain.
+     *
+     * @param httpSecurity the HttpSecurity to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if an error occurs while configuring the security filter chain
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -43,36 +39,19 @@ public class SecurityConfig extends OncePerRequestFilter {
                 .build();
     }
 
+    /**
+     * Filters incoming requests to set the authorization header.
+     *
+     * @param request the HttpServletRequest
+     * @param response the HttpServletResponse
+     * @param filterChain the FilterChain
+     * @throws ServletException if a servlet error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        //String appKeyHeader = request.getHeader("App-Key-Header");
         String authorizationHeader = request.getHeader("Authorization");
         ApplicationKeyUtility.setAuthorization(authorizationHeader);
         filterChain.doFilter(request, response);
-        //filterRequest(request, response, filterChain, appKeyHeader, authorizationHeader);
-        //response.setStatus(HttpServletResponse.SC_OK);
     }
-
-//    private void filterRequest(HttpServletRequest request,
-//                               HttpServletResponse response,
-//                               FilterChain filterChain,
-//                               String appKeyHeader,
-//                               String authorizationHeader) {
-//        if (appKeyHeader != null) {
-//            Optional<ApplicationEntity> application = applicationRepository.findByApplicationId(appKeyHeader);
-//            application.ifPresentOrElse(app -> {
-//                if (appKeyHeader.equals(app.getApplicationId())) {
-//                    log.info("## LOGGED WITH APP {} ##", app.getApplicationName());
-//                    ApplicationKeyUtility.setAppKey(appKeyHeader);
-//                    ApplicationKeyUtility.setAuthorization(authorizationHeader);
-//                    try {
-//                        filterChain.doFilter(request, response);
-//                    } catch (IOException | ServletException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            }, () -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
-//        }
-//    }
-
 }

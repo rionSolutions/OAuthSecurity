@@ -2,7 +2,6 @@ package com.orionsolution.oauthsecurity.utility;
 
 import com.orionsolution.oauthsecurity.entity.PermissionsEntity;
 import com.orionsolution.oauthsecurity.exception.BusinessException;
-import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

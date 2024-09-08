@@ -1,7 +1,6 @@
 package com.orionsolution.oauthsecurity.entity;
 
 
-import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

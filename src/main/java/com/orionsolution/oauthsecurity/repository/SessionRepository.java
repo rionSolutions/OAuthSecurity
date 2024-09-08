@@ -8,16 +8,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SessionRepository extends JpaRepository<SessionEntity, String> {
 
     @Query("SELECT SSE FROM SessionEntity SSE " +
             "JOIN SSE.applicationRole.applicationEntity APP " +
-            "WHERE SSE.credentialId = :credentialId")
-    List<SessionEntity> getByCredentialSession(String credentialId, Pageable pageable);
+            "WHERE SSE.id = :sessionId")
+    List<SessionEntity> getByIdSession(String sessionId, Pageable pageable);
 
-    default List<SessionEntity> getByCredentialSessionWithLimit(String credentialId) {
-        return getByCredentialSession(credentialId, PageRequest.of(0, 1));
+    default Optional<SessionEntity> getByIdSessionWithLimit(String sessionId) {
+        List<SessionEntity> sessions = getByIdSession(sessionId, PageRequest.of(0, 1));
+        return sessions.isEmpty() ? Optional.empty() : Optional.of(sessions.get(0));
     }
 }

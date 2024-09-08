@@ -8,7 +8,7 @@ public interface OauthService {
 
     AuthorizationDTO refreshTokenAccess(RequireSessionDTO requireSessionDTO);
 
-    AuthorizationDTO registerApplicationSession(RequireSessionDTO sessionDTO);
+    AuthorizationDTO registerApplicationSession(String systemOrigin);
 
     AuthorizationDTO requestAuthorization(RequireSessionDTO sessionDTO);
 }

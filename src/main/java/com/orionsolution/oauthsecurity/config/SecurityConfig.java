@@ -38,34 +38,35 @@ public class SecurityConfig extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-        String appKeyHeader = request.getHeader("App-Key-Header");
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        //String appKeyHeader = request.getHeader("App-Key-Header");
         String authorizationHeader = request.getHeader("Authorization");
-        filterRequest(request, response, filterChain, appKeyHeader, authorizationHeader);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        ApplicationKeyUtility.setAuthorization(authorizationHeader);
+        filterChain.doFilter(request, response);
+        //filterRequest(request, response, filterChain, appKeyHeader, authorizationHeader);
+        //response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private void filterRequest(HttpServletRequest request,
-                               HttpServletResponse response,
-                               FilterChain filterChain,
-                               String appKeyHeader,
-                               String authorizationHeader) {
-        if (appKeyHeader != null) {
-            Optional<ApplicationEntity> application = applicationRepository.findByApplicationId(appKeyHeader);
-            application.ifPresentOrElse(app -> {
-                if (appKeyHeader.equals(app.getApplicationId())) {
-                    log.info("## LOGGED WITH APP {} ##", app.getApplicationName());
-                    ApplicationKeyUtility.setAppKey(appKeyHeader);
-                    ApplicationKeyUtility.setAuthorization(authorizationHeader);
-                    try {
-                        filterChain.doFilter(request, response);
-                    } catch (IOException | ServletException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }, () -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
-        }
-    }
+//    private void filterRequest(HttpServletRequest request,
+//                               HttpServletResponse response,
+//                               FilterChain filterChain,
+//                               String appKeyHeader,
+//                               String authorizationHeader) {
+//        if (appKeyHeader != null) {
+//            Optional<ApplicationEntity> application = applicationRepository.findByApplicationId(appKeyHeader);
+//            application.ifPresentOrElse(app -> {
+//                if (appKeyHeader.equals(app.getApplicationId())) {
+//                    log.info("## LOGGED WITH APP {} ##", app.getApplicationName());
+//                    ApplicationKeyUtility.setAppKey(appKeyHeader);
+//                    ApplicationKeyUtility.setAuthorization(authorizationHeader);
+//                    try {
+//                        filterChain.doFilter(request, response);
+//                    } catch (IOException | ServletException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//            }, () -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
+//        }
+//    }
 
 }

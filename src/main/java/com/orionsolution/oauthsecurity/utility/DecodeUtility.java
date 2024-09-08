@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DecodeUtility {
 
-    public static void validatePermissions(RequireSessionDTO sessionDTO, Claims claims, List<PermissionsEntity> permissionsEntityList) {
+    public static void validatePermissions(Claims claims, List<PermissionsEntity> permissionsEntityList, String systemOrigin) {
         final String[] notProcess = {"sub", "exp", "iat", "jti", "iss", "aud"};
         List<String> decoded = new ArrayList<>();
         claims.forEach((key, value) -> {
@@ -26,7 +26,8 @@ public class DecodeUtility {
             }
             decoded.add(processBas64Twice(String.valueOf(value)));
         });
-        permissionsEntityList.stream().filter(permission -> !decoded.contains(sessionDTO.getRequired())).forEach(permission -> {
+
+        permissionsEntityList.stream().filter(permission -> !decoded.contains(systemOrigin)).forEach(permission -> {
             throw new BusinessException.HandlerException("Permission not found", HttpStatus.UNAUTHORIZED);
         });
     }
@@ -39,7 +40,7 @@ public class DecodeUtility {
         return processBas64Twice(decoded);
     }
 
-    private static String getDecoded(String value) {
+    public static String getDecoded(String value) {
         return new String(Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8)));
     }
 

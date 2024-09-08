@@ -21,6 +21,7 @@ import javax.crypto.SecretKey;
 import java.math.BigDecimal;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -40,52 +41,51 @@ public class OauthServiceImpl implements OauthService {
 
     @Override
     public AuthorizationDTO refreshTokenAccess(RequireSessionDTO requireSessionDTO) {
-        SessionRegister result = getSessionRegister(requireSessionDTO);
-        return getAuthorizationDTO(requireSessionDTO, result, Boolean.TRUE);
+        SessionRegister result = getSessionRegister(ApplicationKeyUtility.getAuthorization());
+        return getAuthorizationDTO(requireSessionDTO.getClient_secret(), String.valueOf(result.session.getId()), result, true);
     }
 
-    private AuthorizationDTO getAuthorizationDTO(RequireSessionDTO requireSessionDTO, SessionRegister result, Boolean isRefresh) {
-        // Save new session
+    private AuthorizationDTO getAuthorizationDTO(String client_secret,
+                                                 String session_id,
+                                                 SessionRegister result,
+                                                 Boolean isRefresh) {
         if (!result.session.getActive() && isRefresh) {
             throw new BusinessException.HandlerException("Session is not active", HttpStatus.UNAUTHORIZED);
         }
-        String appKey = result.session().getApplicationRole().getApplicationEntity().getApplicationId();
+
         SessionEntity sessionEntity =
-                SessionEntity.getSessionEntity(requireSessionDTO, appKey, Boolean.TRUE, result.session().getId(), BigDecimal.TEN.longValue());
+                SessionEntity.getSessionEntity(client_secret, true , result.session().getId(), BigDecimal.TEN.longValue());
         sessionRepository.saveAndFlush(sessionEntity);
-        return new AuthorizationDTO(JwtUtility.getJWT(requireSessionDTO, result.claims(), result.secretKey()));
+
+        return new AuthorizationDTO(JwtUtility.getJWT(session_id, result.claims(), result.secretKey()));
     }
 
-    @Override
-    public AuthorizationDTO registerApplicationSession(RequireSessionDTO sessionDTO) {
-        SessionRegister result = getSessionRegister(sessionDTO);
-        // Validate permissions
-        JwtUtility.validatePermissions(sessionDTO, result.claims(), result.permissionsList());
-        // Save new session
-        return getAuthorizationDTO(sessionDTO, result, Boolean.FALSE);
+    public AuthorizationDTO registerApplicationSession(String systemOrigin) {
+        SessionRegister result = getSessionRegister(ApplicationKeyUtility.getAuthorization());
+
+        JwtUtility.validatePermissions(result.claims(), result.permissionsList(), systemOrigin);
+
+        return getAuthorizationDTO(
+                result.session.getApplicationRole().getApplicationEntity().getApplicationId(),
+                result.session.getId().toString(),
+                result,
+                false);
     }
 
-    private SessionRegister getSessionRegister(RequireSessionDTO sessionDTO) {
-        // Get authorization header
-        String authorizationHeader = ApplicationKeyUtility.getAuthorization(sessionDTO);
+    private SessionRegister getSessionRegister(String token) {
+        String subject = JwtUtility.getSubjectFromToken(token);
+        Optional<SessionEntity> session = sessionRepository.getByIdSessionWithLimit(subject);
 
-        // Get session by credential
-        List<SessionEntity> sessionList = sessionRepository.getByCredentialSessionWithLimit(sessionDTO.getCredential());
+        if (session.isEmpty()) {
+            throw new BusinessException.HandlerException("Session not found", HttpStatus.UNAUTHORIZED);
+        }
 
-        // Validate if session exists
-        SessionEntity session = sessionList.stream().findFirst().orElseThrow(
-                () -> new BusinessException.HandlerException("Session not found", HttpStatus.UNAUTHORIZED));
-
-        // Get permissions register in pre-session
+        SessionEntity sessionEntity = session.get();
         List<PermissionsEntity> permissionsList =
-                permissionsRepository.getPermissionsEntityByRoleId(session.getApplicationRole().getRoleCode().getId());
-
-        // Recover secret key
-        SecretKey secretKey = JwtUtility.recoverSecretKey(sessionDTO, session, permissionsList);
-
-        // Get claims
-        Claims claims = JwtUtility.getClaims(secretKey, authorizationHeader);
-        return new SessionRegister(session, permissionsList, secretKey, claims);
+                permissionsRepository.getPermissionsEntityByRoleId(sessionEntity.getApplicationRole().getRoleCode().getId());
+        SecretKey secretKey = JwtUtility.recoverSecretKey(sessionEntity, permissionsList);
+        Claims claims = JwtUtility.getClaims(secretKey, token);
+        return new SessionRegister(sessionEntity, permissionsList, secretKey, claims);
     }
 
     private record SessionRegister(SessionEntity session, List<PermissionsEntity> permissionsList, SecretKey secretKey,
@@ -96,13 +96,17 @@ public class OauthServiceImpl implements OauthService {
     @Transactional
     @Override
     public AuthorizationDTO requestAuthorization(RequireSessionDTO sessionDTO) {
-        String appKey = ApplicationKeyUtility.getAppKey();
-        List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(appKey);
-        if (permissionAppDTOList != null && sessionDTO.getOrigin().equals(
+        List<PermissionAppDTO> permissionAppDTOList = applicationRoleRepository.findRoleByApplicationId(sessionDTO.getClient_secret());
+        if (permissionAppDTOList != null && sessionDTO.getClient_id().equals(
                 permissionAppDTOList.stream().map(PermissionAppDTO::getApplicationName).findAny().orElse(""))) {
-            SessionEntity sessionEntity = SessionEntity.getSessionEntity(sessionDTO, appKey, Boolean.FALSE, BigDecimal.ONE.longValue(), BigDecimal.ONE.longValue());
-            sessionRepository.save(sessionEntity);
-            return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, permissionAppDTOList, appKey));
+            SessionEntity sessionEntity =
+                    SessionEntity.getSessionEntity(
+                            sessionDTO.getClient_secret(), Boolean.FALSE, BigDecimal.ONE.longValue(), BigDecimal.ONE.longValue()
+                    );
+            SessionEntity session = sessionRepository.save(sessionEntity);
+            sessionDTO.setSession_id(session.getId().toString());
+
+            return new AuthorizationDTO(JwtUtility.getJWT(sessionDTO, permissionAppDTOList));
         }
         throw new BusinessException.HandlerException("Application not authorized", HttpStatus.UNAUTHORIZED);
     }

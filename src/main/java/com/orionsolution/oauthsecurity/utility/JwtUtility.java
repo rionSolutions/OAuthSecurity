@@ -8,6 +8,7 @@ import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 
 import javax.crypto.SecretKey;
@@ -17,15 +18,18 @@ import java.util.*;
 @Slf4j
 public final class JwtUtility extends DecodeUtility {
 
+    public static String getSubjectFromToken(String token) {
+        String tokenWithoutSign = token.split("\\.")[1];
+        String jsonString = DecodeUtility.getDecoded(tokenWithoutSign);
+        JSONObject jsonObject = new JSONObject(jsonString);
+        return jsonObject.getString("sub");
+    }
 
-    public static SecretKey recoverSecretKey(RequireSessionDTO sessionDTO,
-                                             SessionEntity session,
+    public static SecretKey recoverSecretKey(SessionEntity session,
                                              List<PermissionsEntity> permissionsEntityList) {
-
         StringBuilder aggregateKey = new StringBuilder();
         if (session != null && session.getApplicationRole() != null && session.getApplicationRole().getApplicationEntity() != null) {
-            aggregateKey.append(session.getApplicationRole().getApplicationEntity().getApplicationId())
-                    .append(sessionDTO.getCredential());
+            aggregateKey.append(session.getApplicationRole().getApplicationEntity().getApplicationId());
         }
         if (permissionsEntityList != null) {
             permissionsEntityList.forEach(permissionEntity -> aggregateKey.append('.').append(permissionEntity.getPermissionName()));
@@ -38,11 +42,10 @@ public final class JwtUtility extends DecodeUtility {
     }
 
     public static String getJWT(RequireSessionDTO sessionDTO,
-                                List<PermissionAppDTO> permissionAppDTOList,
-                                String applicationHeader) {
+                                List<PermissionAppDTO> permissionAppDTOList) {
 
         Map<String, Object> claims = new HashMap<>();
-        StringBuilder aggregateKey = new StringBuilder().append(applicationHeader).append(sessionDTO.getCredential());
+        StringBuilder aggregateKey = new StringBuilder().append(sessionDTO.getClient_secret());
         permissionAppDTOList.forEach(permissionAppDTO -> {
             claims.put(
                     PermissionAppDTO.getUniqueKey(permissionAppDTO),
@@ -55,10 +58,10 @@ public final class JwtUtility extends DecodeUtility {
         final SecretKey secretKey =
                 Keys.hmacShaKeyFor(Base64.getEncoder().encode(aggregateKey.toString().getBytes(StandardCharsets.UTF_8)));
 
-        return getJWT(sessionDTO, claims, secretKey);
+        return getJWT(sessionDTO.getSession_id(), claims, secretKey);
     }
 
-    public static String getJWT(RequireSessionDTO sessionDTO, Map<String, Object> claims, SecretKey secretKey) {
+    public static String getJWT(String session_id, Map<String, Object> claims, SecretKey secretKey) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "SHA512");
         headers.put("typ", "JWT");
@@ -67,7 +70,7 @@ public final class JwtUtility extends DecodeUtility {
                 .setClaims(claims)
                 .setHeader(headers)
                 .setAudience("https://orion-softwares.com.br")
-                .setSubject(sessionDTO.getCredential())
+                .setSubject(session_id)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10)) //10 minutes
                 .signWith(secretKey)

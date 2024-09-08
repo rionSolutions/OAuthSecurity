@@ -1,7 +1,7 @@
 package com.orionsolution.oauthsecurity.model;
 
 public record AuthorizationDTO (
-        String token
+        String access_token
 ){}
 
 

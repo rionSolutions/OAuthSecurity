@@ -33,3 +33,27 @@ server:
     context-path: /oauth
     encoding:
       charset: '@project.build.sourceEncoding@'
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    display-request-duration: true
+    try-it-out-enabled: true
+    defaultModelsExpandDepth: -1
+    defaultModelExpandDepth: 1
+    doc-expansion: none
+    filter: true
+    show-extensions: true
+    show-common-extensions: true
+    deep-linking: true
+    persist-authorization: true
+    syntax-highlighter: prism
+    syntax-highlighter-theme: tomorrow-night
+    validator-url: null
+logging:
+  level:
+    org.springframework.web: WARN
+    org.springframework.http: WARN

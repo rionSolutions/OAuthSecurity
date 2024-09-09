@@ -55,5 +55,5 @@ springdoc:
     validator-url: null
 logging:
   level:
-    org.springframework.web: WARN
-    org.springframework.http: WARN
+    org.springframework.web: DEBUG
+    org.springframework.http: DEBUG

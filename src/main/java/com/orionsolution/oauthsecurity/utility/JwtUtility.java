@@ -61,6 +61,8 @@ public final class JwtUtility extends DecodeUtility {
             aggregateKey.append('.').append(permissionAppDTO.getPermissionName());
         });
 
+        claims.put("iss", "http://localhost:8081/oauth/api/v1/requestAccessSession");
+
         //signature is  HMACSHA512(aggregateKey) composed by applicationHeader and sessionDTO.getCredential() more permissionAppDTOList
         log.info("secret key: {}", aggregateKey);
         final SecretKey secretKey =

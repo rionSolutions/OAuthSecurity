@@ -5,6 +5,7 @@ import com.orionsolution.oauthsecurity.entity.SessionEntity;
 import com.orionsolution.oauthsecurity.exception.BusinessException;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -54,13 +55,14 @@ public final class JwtUtility extends DecodeUtility {
     public static String getJWT(RequireSessionDTO sessionDTO, List<PermissionAppDTO> permissionAppDTOList) {
         Map<String, Object> claims = new HashMap<>();
         StringBuilder aggregateKey = new StringBuilder().append(sessionDTO.getClient_secret());
+        List<String> roles = new ArrayList<>();
         permissionAppDTOList.forEach(permissionAppDTO -> {
-            claims.put(
-                    PermissionAppDTO.getUniqueKey(permissionAppDTO),
-                    Base64.getEncoder().encode(permissionAppDTO.getPermissionName().getBytes(StandardCharsets.UTF_8)));
+            roles.add(permissionAppDTO.getPermissionName());
             aggregateKey.append('.').append(permissionAppDTO.getPermissionName());
         });
 
+        claims.put("roles", roles);
+        claims.put("scope", "read write");
         claims.put("iss", "http://localhost:8081/oauth/api/v1/requestAccessSession");
 
         //signature is  HMACSHA512(aggregateKey) composed by applicationHeader and sessionDTO.getCredential() more permissionAppDTOList

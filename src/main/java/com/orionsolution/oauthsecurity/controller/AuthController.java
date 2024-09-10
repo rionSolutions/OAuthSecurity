@@ -68,7 +68,7 @@ public class AuthController {
                             schema = @Schema(implementation = AuthorizationDTO.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @GetMapping("/requestAccessSession")
+    @GetMapping("/requestAccessSession/**")
     public ResponseEntity<AuthorizationDTO> registerAccessSession(@RequestHeader("systemOrigin") String systemOrigin) {
         return ResponseEntity.ok(oauthService.registerApplicationSession(systemOrigin));
     }

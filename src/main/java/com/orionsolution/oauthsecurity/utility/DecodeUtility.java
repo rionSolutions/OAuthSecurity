@@ -9,34 +9,15 @@ import org.springframework.http.HttpStatus;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 public class DecodeUtility {
 
     public static void validatePermissions(Claims claims, List<PermissionsEntity> permissionsEntityList, String systemOrigin) {
-        final String[] notProcess = {"sub", "exp", "iat", "jti", "iss", "aud"};
-        List<String> decoded = new ArrayList<>();
-        claims.forEach((key, value) -> {
-            if (Arrays.asList(notProcess).contains(key)) {
-                return;
-            }
-            decoded.add(processBas64Twice(String.valueOf(value)));
-        });
-
-        permissionsEntityList.stream().filter(permission -> !decoded.contains(systemOrigin)).forEach(permission -> {
+        List<String> roles = claims.get("roles", List.class);
+        permissionsEntityList.stream().filter(permission -> !roles.contains(systemOrigin)).forEach(permission -> {
             throw new BusinessException.HandlerException("Permission not found", HttpStatus.UNAUTHORIZED);
         });
-    }
-
-    private static String processBas64Twice(String value) {
-        final String decoded = getDecoded(value);
-        if (!decoded.contains("=")) {
-            return decoded;
-        }
-        return processBas64Twice(decoded);
     }
 
     public static String getDecoded(String value) {

@@ -1,7 +1,6 @@
 package com.orionsolution.oauthsecurity.entity;
 
 
-import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,9 +29,6 @@ public class SessionEntity implements Serializable {
     @JoinColumn(name = "APPLICATION_ID")
     private ApplicationRoleEntity applicationRole;
 
-    @Column(name = "CREDENTIAL_ID")
-    private String credentialId;
-
     @Column(name = "DT_INCLUDE_REGT")
     private LocalDateTime dtInclusion;
 
@@ -42,14 +38,12 @@ public class SessionEntity implements Serializable {
     @Column(name = "ACTIVE")
     private Boolean active;
 
-    public static SessionEntity getSessionEntity(RequireSessionDTO sessionDTO,
-                                                 String applicationHeader,
+    public static SessionEntity getSessionEntity(String client_secret,
                                                  Boolean active,
                                                  Long id,
                                                  Long duration) {
         SessionEntity sessionEntity = new SessionEntity();
         sessionEntity.setId(id);
-        sessionEntity.setCredentialId(sessionDTO.getCredential());
         sessionEntity.setActive(active);
         sessionEntity.setDtInclusion(LocalDateTime.now());
         sessionEntity.setDtExpiration(LocalDateTime.now().plusMinutes(duration));
@@ -57,7 +51,7 @@ public class SessionEntity implements Serializable {
         ApplicationEntity applicationEntity = new ApplicationEntity();
         applicationRole.setApplicationEntity(applicationEntity);
         sessionEntity.setApplicationRole(applicationRole);
-        sessionEntity.getApplicationRole().getApplicationEntity().setApplicationId(applicationHeader);
+        sessionEntity.getApplicationRole().getApplicationEntity().setApplicationId(client_secret);
         return sessionEntity;
     }
 

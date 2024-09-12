@@ -22,9 +22,9 @@ spring:
   #    defer-datasource-initialization: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://181.215.134.40:5432/orion
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: Orionsolution@2024
+    password: admin
   banner:
     charset: UTF-8
 server:
@@ -53,3 +53,7 @@ springdoc:
     syntax-highlighter: prism
     syntax-highlighter-theme: tomorrow-night
     validator-url: null
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.http: DEBUG

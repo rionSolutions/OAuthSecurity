@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.orionsolution</groupId>
     <artifactId>oauthsecurity</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <name>oauthsecurity</name>
     <description>Responsable for provide security and mananger JWT between applications.</description>
     <url/>

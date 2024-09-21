@@ -23,8 +23,8 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://181.215.134.40:5432/orion
-    username: postgres
-    password: Orionsolution@2024
+    username: /etc/credentials/user
+    password: /etc/credentials/pass
   banner:
     charset: UTF-8
 server:

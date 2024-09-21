@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.io.File;
+import java.nio.file.Files;
 
 @Configuration
 @Slf4j
@@ -27,12 +29,31 @@ public class DataBaseConfig {
     @Bean
     public DataSource dataSource() throws Exception {
         try {
-            DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-            dataSourceBuilder.driverClassName(driverName);
-            dataSourceBuilder.url(url);
-            dataSourceBuilder.username(username);
-            dataSourceBuilder.password(password);
-            return dataSourceBuilder.build();
+
+            log.warn("folders : [{}] , [{}] ", password, username);
+
+            String user = null;
+            String pass = null;
+
+            File userFile = new File(username.concat(".txt"));
+            File passFile = new File(password.concat(".txt"));
+
+            if (userFile.exists() && passFile.exists()) {
+                log.warn("CREDENTIALS FOUND");
+                user = Files.readString(userFile.toPath());
+                pass = Files.readString(passFile.toPath());
+                log.info("User : [{}] , Pass : [{}]", user, pass);
+            }
+
+            if (user != null && pass != null) {
+                DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
+                dataSourceBuilder.driverClassName(driverName);
+                dataSourceBuilder.url(url);
+                dataSourceBuilder.username(user.trim());
+                dataSourceBuilder.password(pass.trim());
+                return dataSourceBuilder.build();
+            }
+            throw new Exception(ERROR + " NULL CREDENTIALS");
         } catch (Exception ex) {
             log.error(ERROR);
             throw new Exception(ERROR, ex);

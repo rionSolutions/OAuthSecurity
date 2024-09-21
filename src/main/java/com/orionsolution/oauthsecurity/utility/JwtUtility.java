@@ -5,7 +5,6 @@ import com.orionsolution.oauthsecurity.entity.SessionEntity;
 import com.orionsolution.oauthsecurity.exception.BusinessException;
 import com.orionsolution.oauthsecurity.model.PermissionAppDTO;
 import com.orionsolution.oauthsecurity.model.RequireSessionDTO;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;

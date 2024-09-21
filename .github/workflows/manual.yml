@@ -1,0 +1,44 @@
+name: Deploy
+on:
+  push:
+    branches: 
+      - master
+jobs:
+  build_deploy:
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout code
+       uses: actions/checkout@v2
+
+     - name: SSH and Deploy
+       uses: appleboy/ssh-action@master
+       with:
+         host: 181.215.134.40
+         username: root
+         key: ${{ secrets.PRIVATE_KEY }}
+         script: | 
+               echo "Add SSH key to agent"
+               eval "$(ssh-agent -s)"
+               ssh-add ~/.ssh/github_hunterkoon
+               cd ~/projects/OAuthSecurity 
+               ls -la 
+               echo "Pulling the latest code from the repository"
+               git pull
+               ls -la
+               echo "Copying the credentials to the project"
+               cp  ~/credentials/data-base/user.txt ~/projects/OAuthSecurity/src/main/resources/credentials/ 
+               cp  ~/credentials/data-base/pass.txt ~/projects/OAuthSecurity/src/main/resources/credentials/ 
+               echo "Building the project"
+               docker stop $(docker ps -aq --filter "name=oauthsecurity-server")
+               docker rm $(docker ps -aq --filter "name=oauthsecurity-server")
+               docker compose up --build -d
+               echo "Making copy of the credentials"
+               cd ~/projects/OAuthSecurity/src/main/resources/credentials
+               docker cp . $(docker ps -aq --filter "name=oauthsecurity-server"):/etc/credentials
+               echo "Restarting the container"
+               docker restart $(docker ps -aq --filter "name=oauthsecurity-server") 
+               echo "Deployment completed"
+               git reset --hard
+               echo "Git restored"
+               docker logs $(docker ps -aq --filter "name=oauthsecurity-server")
+
